@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NutriFit AI - Calorie Scanner & Fitness Planner</title>
+    <meta name="description" content="An advanced health portal to scan food images for calories and calculate personalized fitness parameters and action plans.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Gradient background elements -->
+    <div class="bg-glow bg-glow-1"></div>
+    <div class="bg-glow bg-glow-2"></div>
+    <div class="bg-glow bg-glow-3"></div>
+
+    <div class="app-container">
+        <!-- Sidebar / Navigation -->
+        <aside class="sidebar">
+            <div class="brand">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+                    </svg>
+                </div>
+                <h2>NutriFit <span>AI</span></h2>
+            </div>
+            
+            <nav class="nav-menu">
+                <button class="nav-item active" data-tab="scanner">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                        <circle cx="12" cy="13" r="4"/>
+                    </svg>
+                    <span>Calorie Scanner</span>
+                </button>
+                <button class="nav-item" data-tab="calculator">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+                        <line x1="12" y1="18" x2="12" y2="18"/>
+                        <line x1="8" y1="6" x2="16" y2="6"/>
+                        <line x1="8" y1="10" x2="16" y2="10"/>
+                        <line x1="8" y1="14" x2="16" y2="14"/>
+                    </svg>
+                    <span>Fitness Calculator</span>
+                </button>
+                <button class="nav-item disabled" id="nav-plan-tab" data-tab="plan">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="9" y1="9" x2="15" y2="9"/>
+                        <line x1="9" y1="13" x2="15" y2="13"/>
+                        <line x1="9" y1="17" x2="13" y2="17"/>
+                    </svg>
+                    <span>Fitness Plan</span>
+                </button>
+            </nav>
+
+            <div class="user-status-card">
+                <div class="user-status-header">
+                    <div class="status-indicator" id="status-indicator-dot"></div>
+                    <span>Health Profile</span>
+                </div>
+                <p id="profile-summary">No active profile. Complete the fitness calculator to unlock recommendations.</p>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Calorie Scanner Tab -->
+            <section id="tab-scanner" class="tab-content active">
+                <header class="section-header">
+                    <div>
+                        <h1>AI Calorie Scanner</h1>
+                        <p>Upload a food image to scan and estimate calories and macronutrients instantly.</p>
+                    </div>
+                    <!-- Gemini Key Control -->
+                    <div class="gemini-key-toggle">
+                        <button class="btn btn-secondary btn-sm" id="toggle-key-btn">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                            </svg>
+                            <span>API Settings</span>
+                        </button>
+                    </div>
+                </header>
+
+                <!-- API Key Modal/Card -->
+                <div class="api-key-container hidden" id="api-key-panel">
+                    <div class="api-key-card">
+                        <h3>Google Gemini API Configuration</h3>
+                        <p>To enable real-time food recognition using state-of-the-art vision models, enter your Gemini API Key below. The key is stored safely in your browser's local storage and is never sent to any third-party server.</p>
+                        <div class="input-group">
+                            <input type="password" id="gemini-api-key" placeholder="Enter Gemini API Key (AIzaSy...)">
+                            <button class="btn btn-primary" id="save-key-btn">Save Key</button>
+                            <button class="btn btn-secondary" id="clear-key-btn">Clear</button>
+                        </div>
+                        <span class="api-status-badge" id="api-status-indicator">Mode: Simulated</span>
+                    </div>
+                </div>
+
+                <div class="scanner-grid">
+                    <!-- Scanner Column -->
+                    <div class="card scanner-card">
+                        <div class="card-header">
+                            <h3>Food Image Upload</h3>
+                            <span class="badge badge-cyan" id="scan-mode-badge">Simulated Mode</span>
+                        </div>
+                        
+                        <!-- Drag & Drop Zone -->
+                        <div class="upload-zone" id="drop-zone">
+                            <input type="file" id="image-upload" accept="image/*" class="file-input">
+                            <div class="upload-prompt" id="upload-prompt-view">
+                                <div class="upload-icon animate-bounce">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                                        <polyline points="17 8 12 3 7 8"/>
+                                        <line x1="12" y1="3" x2="12" y2="15"/>
+                                    </svg>
+                                </div>
+                                <p class="primary-text">Drag and drop food photo here, or <span>browse</span></p>
+                                <p class="secondary-text">Supports JPG, PNG, WebP up to 10MB</p>
+                            </div>
+                            
+                            <!-- Scanner Visual Overlay -->
+                            <div class="scanner-visual hidden" id="scanner-preview-container">
+                                <img id="scanner-preview" src="#" alt="Food Preview">
+                                <div class="scan-laser" id="scan-laser-line"></div>
+                                <div class="scanning-overlay hidden" id="scanning-indicator">
+                                    <div class="spinner"></div>
+                                    <p id="scanning-text">AI Analyzing Ingredients...</p>
+                                </div>
+                                <div class="bounding-boxes-container" id="bbox-container"></div>
+                            </div>
+                        </div>
+
+                        <!-- Test Presets (Indian & Foreign) -->
+                        <div class="presets-section">
+                            <h4>Or select a demo food preset:</h4>
+                            <div class="preset-buttons">
+                                <button class="btn btn-preset" data-preset="biryani">
+                                    <span>🍛 Chicken Biryani</span>
+                                </button>
+                                <button class="btn btn-preset" data-preset="pizza">
+                                    <span>🍕 Pepperoni Pizza</span>
+                                </button>
+                                <button class="btn btn-preset" data-preset="samosa">
+                                    <span>🥟 Samosa Chaat</span>
+                                </button>
+                                <button class="btn btn-preset" data-preset="salad">
+                                    <span>🥗 Greek Salad</span>
+                                </button>
+                                <button class="btn btn-preset" data-preset="sushi">
+                                    <span>🍣 Assorted Sushi</span>
+                                </button>
+                                <button class="btn btn-preset" data-preset="dosa">
+                                    <span>🥞 Masala Dosa</span>
+                                </button>
+                            </div>
+                            
+                            <div class="manual-entry-section" style="margin-top: 1.25rem; border-top: 1px dashed var(--border-color); padding-top: 1rem;">
+                                <h4>Or type/correct the food name:</h4>
+                                <div class="input-group" style="margin-bottom: 0;">
+                                    <input type="text" id="manual-food-input" placeholder="e.g., Paneer Tikka, Avocado Toast, Butter Chicken..." style="font-family: var(--font-body); font-size: 0.85rem;">
+                                    <button class="btn btn-primary btn-sm" id="manual-food-btn" style="white-space: nowrap;">Analyze Name</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Scan Results Column -->
+                    <div class="card results-card" id="results-placeholder-card">
+                        <div class="results-empty-state">
+                            <div class="empty-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                                    <circle cx="12" cy="12" r="10"/>
+                                    <line x1="12" y1="16" x2="12" y2="12"/>
+                                    <line x1="12" y1="8" x2="12.01" y2="8"/>
+                                </svg>
+                            </div>
+                            <h3>Waiting for Scan</h3>
+                            <p>Upload a food image or choose a demo preset to see calorie estimates and macronutrient breakdowns.</p>
+                        </div>
+                    </div>
+
+                    <div class="card results-card hidden" id="results-active-card">
+                        <div class="card-header">
+                            <h3>Nutritional Summary</h3>
+                            <span class="scan-timestamp" id="scan-time">Just Now</span>
+                        </div>
+
+                        <div class="nutrition-summary-layout">
+                            <!-- Circular Calorie Gauge -->
+                            <div class="calorie-gauge-container">
+                                <div class="calorie-svg-wrap">
+                                    <svg viewBox="0 0 120 120" class="gauge-svg">
+                                        <circle cx="60" cy="60" r="50" class="gauge-bg"/>
+                                        <circle cx="60" cy="60" r="50" class="gauge-fill" id="calorie-gauge-bar" stroke-dasharray="314.16" stroke-dashoffset="314.16"/>
+                                    </svg>
+                                    <div class="gauge-text">
+                                        <span class="gauge-value" id="res-total-calories">0</span>
+                                        <span class="gauge-label">kcal</span>
+                                    </div>
+                                </div>
+                                <div class="gauge-caption">Estimated Calories</div>
+                            </div>
+
+                            <!-- Macro breakdown progress meters -->
+                            <div class="macro-list">
+                                <!-- Protein -->
+                                <div class="macro-item">
+                                    <div class="macro-header">
+                                        <span class="macro-title"><span class="dot dot-protein"></span>Protein</span>
+                                        <span class="macro-value"><strong id="res-protein">0g</strong> <span class="macro-pct" id="res-protein-cal">0 kcal</span></span>
+                                    </div>
+                                    <div class="macro-track">
+                                        <div class="macro-bar bar-protein" id="res-protein-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <!-- Carbs -->
+                                <div class="macro-item">
+                                    <div class="macro-header">
+                                        <span class="macro-title"><span class="dot dot-carbs"></span>Carbs</span>
+                                        <span class="macro-value"><strong id="res-carbs">0g</strong> <span class="macro-pct" id="res-carbs-cal">0 kcal</span></span>
+                                    </div>
+                                    <div class="macro-track">
+                                        <div class="macro-bar bar-carbs" id="res-carbs-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                                <!-- Fats -->
+                                <div class="macro-item">
+                                    <div class="macro-header">
+                                        <span class="macro-title"><span class="dot dot-fats"></span>Fats</span>
+                                        <span class="macro-value"><strong id="res-fats">0g</strong> <span class="macro-pct" id="res-fats-cal">0 kcal</span></span>
+                                    </div>
+                                    <div class="macro-track">
+                                        <div class="macro-bar bar-fats" id="res-fats-bar" style="width: 0%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Detailed items detected -->
+                        <div class="detected-items-section">
+                            <h4>Detected Food Items:</h4>
+                            <div class="detected-items-list" id="res-items-list">
+                                <!-- Items populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Health analysis badge/recommendation -->
+                        <div class="food-advice-card" id="res-food-advice">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Fitness Calculator Tab -->
+            <section id="tab-calculator" class="tab-content">
+                <header class="section-header">
+                    <div>
+                        <h1>Fitness Assessment Calculator</h1>
+                        <p>Provide your details to analyze key health parameters, verify if you fall in the fit range, and generate a customized fitness plan.</p>
+                    </div>
+                </header>
+
+                <div class="calculator-grid">
+                    <!-- Inputs Form -->
+                    <div class="card form-card">
+                        <div class="card-header">
+                            <h3>Body Parameters</h3>
+                        </div>
+                        <form id="fitness-form" onsubmit="event.preventDefault();">
+                            <!-- Sex selection buttons -->
+                            <div class="form-group">
+                                <label class="input-label">Sex Assigned at Birth</label>
+                                <div class="btn-group-toggle">
+                                    <input type="radio" id="gender-male" name="gender" value="male" checked class="hidden-radio">
+                                    <label for="gender-male" class="btn-toggle active" id="label-gender-male">Male</label>
+
+                                    <input type="radio" id="gender-female" name="gender" value="female" class="hidden-radio">
+                                    <label for="gender-female" class="btn-toggle" id="label-gender-female">Female</label>
+                                </div>
+                            </div>
+
+                            <div class="form-row">
+                                <!-- Age -->
+                                <div class="form-group">
+                                    <label for="input-age" class="input-label">Age (years)</label>
+                                    <input type="number" id="input-age" class="form-control" value="25" min="15" max="100" required>
+                                </div>
+                                <!-- Activity Level -->
+                                <div class="form-group">
+                                    <label for="input-activity" class="input-label">Activity Level</label>
+                                    <select id="input-activity" class="form-control">
+                                        <option value="1.2">Sedentary (Little to no exercise)</option>
+                                        <option value="1.375" selected>Lightly Active (Light exercise 1-3 days/wk)</option>
+                                        <option value="1.55">Moderately Active (Moderate exercise 3-5 days/wk)</option>
+                                        <option value="1.725">Very Active (Hard exercise 6-7 days/wk)</option>
+                                        <option value="1.9">Extra Active (Very heavy physical job/2x workouts)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Height with Unit Selector -->
+                            <div class="form-group">
+                                <div class="input-header-label">
+                                    <label class="input-label">Height</label>
+                                    <div class="unit-toggle" id="height-unit-wrap">
+                                        <span class="unit-option active" data-unit="metric" id="opt-height-metric">Metric (cm)</span>
+                                        <span class="unit-divider">|</span>
+                                        <span class="unit-option" data-unit="imperial" id="opt-height-imperial">Imperial (ft/in)</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Metric height input -->
+                                <div id="height-metric-input" class="height-input-box">
+                                    <div class="input-wrapper">
+                                        <input type="number" id="input-height-cm" class="form-control" value="175" min="100" max="250">
+                                        <span class="input-addon">cm</span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Imperial height input -->
+                                <div id="height-imperial-input" class="height-input-box hidden">
+                                    <div class="form-row no-gap">
+                                        <div class="input-wrapper half-width">
+                                            <input type="number" id="input-height-ft" class="form-control" value="5" min="3" max="8">
+                                            <span class="input-addon">ft</span>
+                                        </div>
+                                        <div class="input-wrapper half-width">
+                                            <input type="number" id="input-height-in" class="form-control" value="9" min="0" max="11">
+                                            <span class="input-addon">in</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Weight with Unit Selector -->
+                            <div class="form-group">
+                                <div class="input-header-label">
+                                    <label class="input-label">Weight</label>
+                                    <div class="unit-toggle" id="weight-unit-wrap">
+                                        <span class="unit-option active" data-unit="metric" id="opt-weight-metric">Metric (kg)</span>
+                                        <span class="unit-divider">|</span>
+                                        <span class="unit-option" data-unit="imperial" id="opt-weight-imperial">Imperial (lbs)</span>
+                                    </div>
+                                </div>
+                                <div class="input-wrapper">
+                                    <input type="number" id="input-weight" class="form-control" value="70" min="30" max="300" required>
+                                    <span class="input-addon" id="weight-unit-addon">kg</span>
+                                </div>
+                            </div>
+
+                            <!-- Fitness Goal -->
+                            <div class="form-group">
+                                <label for="input-goal" class="input-label">Fitness Goal</label>
+                                <select id="input-goal" class="form-control">
+                                    <option value="lose">Fat Loss (Caloric Deficit)</option>
+                                    <option value="maintain" selected>Maintenance (Healthy Balance)</option>
+                                    <option value="gain">Muscle Gain / Lean Bulk (Caloric Surplus)</option>
+                                </select>
+                            </div>
+
+                            <!-- Advanced Body Fat Checkbox -->
+                            <div class="checkbox-wrapper">
+                                <input type="checkbox" id="toggle-advanced-measurements">
+                                <label for="toggle-advanced-measurements">Include Body Circumferences (More Accurate Body Fat %)</label>
+                            </div>
+
+                            <!-- Advanced Measurements Block -->
+                            <div class="advanced-measurements-panel hidden" id="advanced-measurements-section">
+                                <p class="helper-text">Used for the US Navy Circumference Method to estimate body fat more accurately than using weight/height alone.</p>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="input-neck" class="input-label">Neck (cm)</label>
+                                        <input type="number" id="input-neck" class="form-control" value="38" min="20" max="60">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="input-waist" class="input-label">Waist (cm)</label>
+                                        <input type="number" id="input-waist" class="form-control" value="84" min="40" max="160">
+                                    </div>
+                                    <div class="form-group" id="hip-group" style="display: none;">
+                                        <label for="input-hip" class="input-label">Hip (cm)</label>
+                                        <input type="number" id="input-hip" class="form-control" value="95" min="40" max="160">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-primary btn-block btn-pulse" id="calculate-btn">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px; margin-right: 8px; display: inline;">
+                                    <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                                    <polyline points="22 4 12 14.01 9 11.01"/>
+                                </svg>
+                                Analyze Health Metrics
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Empty / Instruction Panel before Calculation -->
+                    <div class="card status-card" id="calculator-empty-card">
+                        <div class="fitness-intro">
+                            <h3>Let's Calculate Your Fitness Parameters</h3>
+                            <p>Enter your physiological parameters in the form and click <strong>Analyze Health Metrics</strong>. We will check the following indicators:</p>
+                            <ul class="fitness-factors-list">
+                                <li>
+                                    <div class="factor-bullet green"></div>
+                                    <div><strong>Body Mass Index (BMI):</strong> Classifies weight status and highlights clinical weight risks.</div>
+                                </li>
+                                <li>
+                                    <div class="factor-bullet blue"></div>
+                                    <div><strong>Basal Metabolic Rate (BMR):</strong> Your body's baseline energy expenditure at complete rest.</div>
+                                </li>
+                                <li>
+                                    <div class="factor-bullet purple"></div>
+                                    <div><strong>Total Daily Energy Expenditure (TDEE):</strong> Maintenance calories incorporating daily physical movement.</div>
+                                </li>
+                                <li>
+                                    <div class="factor-bullet orange"></div>
+                                    <div><strong>Body Fat Percentage:</strong> Checks ratio of adipose tissue using anthropometric calculations.</div>
+                                </li>
+                                <li>
+                                    <div class="factor-bullet red"></div>
+                                    <div><strong>Ideal Body Weight Range:</strong> Benchmarks your metrics against healthy physiological norms.</div>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Fitness Plan Tab -->
+            <section id="tab-plan" class="tab-content">
+                <header class="section-header">
+                    <div>
+                        <h1>Your Personal Fitness Plan</h1>
+                        <p id="plan-user-meta">Calculated based on your body characteristics and goals.</p>
+                    </div>
+                    <button class="btn btn-secondary" onclick="window.print()">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px; margin-right: 6px;">
+                            <polyline points="6 9 6 2 18 2 18 9"/>
+                            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/>
+                            <rect x="6" y="14" width="12" height="8"/>
+                        </svg>
+                        Print/Save PDF
+                    </button>
+                </header>
+
+                <!-- Fitness Score & Status -->
+                <div class="plan-header-grid">
+                    <div class="card status-overall-card" id="overall-fitness-card">
+                        <!-- Filled dynamically -->
+                    </div>
+
+                    <div class="card targets-summary-card">
+                        <h3>Daily Nutritional Budgets</h3>
+                        <div class="targets-grid">
+                            <div class="target-block calories-budget">
+                                <span class="lbl">Calorie Target</span>
+                                <span class="val" id="plan-cal-budget">0 kcal/day</span>
+                                <span class="sub" id="plan-cal-reason">To maintain weight</span>
+                            </div>
+                            <div class="target-block water-budget">
+                                <span class="lbl">Daily Water Intake</span>
+                                <span class="val" id="plan-water-budget">0.0 Liters</span>
+                                <span class="sub">Hydration benchmark</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Parameters Metrics Grid -->
+                <h3 class="subsection-title">Analyzed Health Parameters</h3>
+                <div class="parameters-deck">
+                    <!-- BMI Card -->
+                    <div class="card parameter-card" id="param-bmi-card">
+                        <div class="parameter-header">
+                            <h4>Body Mass Index (BMI)</h4>
+                            <span class="badge" id="param-bmi-badge">Normal</span>
+                        </div>
+                        <div class="parameter-val" id="param-bmi-val">0.0</div>
+                        <div class="gauge-bar-container">
+                            <div class="gauge-bar-track">
+                                <div class="gauge-indicator" id="param-bmi-indicator" style="left: 50%;"></div>
+                            </div>
+                            <div class="gauge-labels">
+                                <span>18.5</span>
+                                <span>25.0</span>
+                                <span>30.0</span>
+                            </div>
+                        </div>
+                        <p class="parameter-desc" id="param-bmi-desc">Your BMI is in the healthy range.</p>
+                    </div>
+
+                    <!-- Body Fat Card -->
+                    <div class="card parameter-card" id="param-bf-card">
+                        <div class="parameter-header">
+                            <h4>Estimated Body Fat</h4>
+                            <span class="badge" id="param-bf-badge">Athletic</span>
+                        </div>
+                        <div class="parameter-val" id="param-bf-val">0.0%</div>
+                        <div class="gauge-bar-container">
+                            <div class="gauge-bar-track">
+                                <div class="gauge-indicator" id="param-bf-indicator" style="left: 40%;"></div>
+                            </div>
+                        </div>
+                        <p class="parameter-desc" id="param-bf-desc">Healthy range of body fat for your sex and age.</p>
+                    </div>
+
+                    <!-- Ideal Weight Card -->
+                    <div class="card parameter-card" id="param-ibw-card">
+                        <div class="parameter-header">
+                            <h4>Ideal Body Weight</h4>
+                            <span class="badge badge-blue">Benchmark</span>
+                        </div>
+                        <div class="parameter-val" id="param-ibw-val">--</div>
+                        <div class="weight-difference-indicator" id="param-ibw-diff">
+                            <!-- Dynamic text comparing current weight to target -->
+                        </div>
+                        <p class="parameter-desc">Calculated using Robinson and Devine physiological formulas.</p>
+                    </div>
+
+                    <!-- BMR / TDEE Card -->
+                    <div class="card parameter-card" id="param-energy-card">
+                        <div class="parameter-header">
+                            <h4>Energy Expenditure</h4>
+                            <span class="badge badge-purple">Metabolic</span>
+                        </div>
+                        <div class="energy-row">
+                            <div class="energy-col">
+                                <span class="energy-lbl">Basal BMR</span>
+                                <span class="energy-val" id="param-bmr-val">0 kcal</span>
+                            </div>
+                            <div class="energy-divider"></div>
+                            <div class="energy-col">
+                                <span class="energy-lbl">Active TDEE</span>
+                                <span class="energy-val" id="param-tdee-val">0 kcal</span>
+                            </div>
+                        </div>
+                        <p class="parameter-desc">BMR is resting energy. TDEE is target maintenance energy.</p>
+                    </div>
+                </div>
+
+                <!-- Structured Fitness Strategy -->
+                <div class="strategy-section">
+                    <!-- Diet & Macros -->
+                    <div class="card strategy-card">
+                        <div class="strategy-header">
+                            <div class="strategy-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+                                </svg>
+                            </div>
+                            <h3>Tailored Dietary Blueprint</h3>
+                        </div>
+                        
+                        <div class="macro-split-visualizer">
+                            <div class="macro-pie-svg">
+                                <svg viewBox="0 0 100 100" class="pie-svg">
+                                    <circle cx="50" cy="50" r="40" class="pie-slice p-protein" id="pie-protein" stroke-dasharray="251.32" stroke-dashoffset="0"/>
+                                    <circle cx="50" cy="50" r="40" class="pie-slice p-carbs" id="pie-carbs" stroke-dasharray="251.32" stroke-dashoffset="0"/>
+                                    <circle cx="50" cy="50" r="40" class="pie-slice p-fats" id="pie-fats" stroke-dasharray="251.32" stroke-dashoffset="0"/>
+                                </svg>
+                                <div class="pie-center-text">
+                                    <span id="pie-total-kcal">0</span>
+                                    <span>kcal</span>
+                                </div>
+                            </div>
+                            <div class="macro-pie-legend">
+                                <div class="legend-item">
+                                    <span class="legend-dot bg-protein"></span>
+                                    <span class="legend-name">Protein (<span id="plan-protein-pct">0</span>%)</span>
+                                    <span class="legend-val" id="plan-protein-val">0g (0 kcal)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-dot bg-carbs"></span>
+                                    <span class="legend-name">Carbohydrates (<span id="plan-carbs-pct">0</span>%)</span>
+                                    <span class="legend-val" id="plan-carbs-val">0g (0 kcal)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <span class="legend-dot bg-fats"></span>
+                                    <span class="legend-name">Fats (<span id="plan-fats-pct">0</span>%)</span>
+                                    <span class="legend-val" id="plan-fats-val">0g (0 kcal)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="diet-recommendations-list">
+                            <h4>Dietary Advice:</h4>
+                            <ul class="bullet-checklist" id="plan-diet-bullets">
+                                <!-- Populated dynamically -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Workout Blueprint -->
+                    <div class="card strategy-card">
+                        <div class="strategy-header">
+                            <div class="strategy-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M6.5 6.5h11M6.5 17.5h11M12 2v20M2 12h20"/>
+                                </svg>
+                            </div>
+                            <h3>Activity & Workout Routine</h3>
+                        </div>
+                        <div class="workout-plan-box">
+                            <div class="workout-meta-row">
+                                <div class="workout-meta-item">
+                                    <span class="w-lbl">Cardio Intensity</span>
+                                    <span class="w-val" id="plan-cardio-level">Moderate</span>
+                                </div>
+                                <div class="workout-meta-item">
+                                    <span class="w-lbl">Resistance Days</span>
+                                    <span class="w-val" id="plan-strength-days">3-4 Days/wk</span>
+                                </div>
+                            </div>
+                            <div class="workout-details-list">
+                                <h4>Exercise Guidelines:</h4>
+                                <ul class="bullet-checklist" id="plan-exercise-bullets">
+                                    <!-- Populated dynamically -->
+                                </ul>
+                            </div>
+                            <div class="exercise-parameters-infobox">
+                                <strong>💡 Achieve Fitness:</strong> Fitness isn't just about weight. It is the synthesis of metabolic efficiency, cardiovascular health, skeletal strength, and flexibility. Maintain standard metrics (BMI 18.5-24.9, Body Fat 10-20% for men, 18-28% for women), keep resting heart rate below 75 BPM, and target 150+ minutes of moderate movement weekly to ensure long-term health.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- App Scripts -->
+    <script src="app.js"></script>
+</body>
+</html>
